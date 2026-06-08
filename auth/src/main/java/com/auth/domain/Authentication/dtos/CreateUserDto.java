@@ -1,4 +1,5 @@
-package com.auth.domain.Users.dtos;
+package com.auth.domain.Authentication.dtos;
+
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserDto {
+public class CreateUserDto {
 
     @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name must be at most 100 characters")
@@ -34,4 +35,6 @@ public class UserDto {
     private String gender;
 
     private String profilePic;
+
+
 }
