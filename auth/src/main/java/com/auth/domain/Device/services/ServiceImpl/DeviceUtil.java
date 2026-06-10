@@ -1,9 +1,9 @@
-package com.auth.domain.Device.services;
+package com.auth.domain.Device.services.ServiceImpl;
 
 import com.auth.domain.Device.dtos.CreateDeviceDto;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
+import org.apache.commons.codec.digest.DigestUtils;
 import ua_parser.Client;
 import ua_parser.Parser;
 
@@ -68,7 +68,6 @@ public class DeviceUtil {
                 .ipAddress(getClientIp(request))
                 .userAgent(userAgent)
                 .language(request.getHeader("Accept-Language"))
-                .timezone(request.getHeader("Time-Zone"))
                 .platform(request.getHeader("Sec-CH-UA-Platform"))
                 .deviceFingerprint(
                         generateFingerprint(
@@ -88,7 +87,7 @@ public class DeviceUtil {
                 .collect(Collectors.joining("."));
     }
 
-    private String getClientIp(
+    public String getClientIp(
             HttpServletRequest request) {
 
         String forwarded =

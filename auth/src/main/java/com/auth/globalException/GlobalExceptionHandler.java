@@ -56,6 +56,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> BadCredentialsException(BadCredentialsException ex) {
+        String message = ex.getMessage();
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .message(message)
+                .success(false)
+                .status(HttpStatus.UNAUTHORIZED).build();
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiErrorResponse> BadRequestException(BadRequestException ex) {
         String message = ex.getMessage();

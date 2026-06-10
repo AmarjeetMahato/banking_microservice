@@ -6,6 +6,7 @@ import com.auth.domain.Tokens.entity.Token;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -38,6 +39,10 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = true, unique = true, length = 150)
     private  String Email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
+    private String password;
+
     @Column(name = "phone", nullable = true,unique = true, length = 20)
     private String phone;
 
@@ -51,6 +56,9 @@ public class User extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean  isActive = true;
+
+    @Builder.Default
+    private  boolean isBlocked = false;
 
     @Builder.Default
     private boolean emailVerified = false; // Registration ke baad verification ke liye

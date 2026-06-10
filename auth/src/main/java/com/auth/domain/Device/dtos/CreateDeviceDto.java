@@ -24,13 +24,16 @@ public class CreateDeviceDto {
 
     private String osVersion;
 
-    private  String language;
-
     private String browser;
 
-    private  String browserVersion;
+    private  String language;
 
     private String timezone;
+    private String country;
+    private String region;
+    private String city;
+
+    private  String browserVersion;
 
     private String platform;
 

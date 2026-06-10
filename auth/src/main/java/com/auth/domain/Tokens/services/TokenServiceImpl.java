@@ -1,5 +1,6 @@
 package com.auth.domain.Tokens.services;
 
+import com.auth.domain.Emails.Services.EmailService;
 import com.auth.domain.Tokens.dtos.TokenCreateDto;
 import com.auth.domain.Tokens.dtos.TokenResponseDto;
 import com.auth.domain.Tokens.dtos.UpdateTokenDto;
@@ -7,17 +8,16 @@ import com.auth.domain.Tokens.entity.Token;
 import com.auth.domain.Tokens.enums.TokenType;
 import com.auth.domain.Tokens.mapper.TokenMapper;
 import com.auth.domain.Tokens.repository.TokenRepository;
+import com.auth.domain.Users.entity.User;
 import com.auth.globalException.BadRequestException;
 import com.auth.globalException.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.patterns.IToken;
-import org.aspectj.weaver.patterns.Pointcut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,7 @@ public class TokenServiceImpl implements TokenService {
 
      private final  TokenRepository tokenRepository;
      private  final TokenMapper tokenMapper;
+     private  final EmailService emailService;
 
     @Override
     @Transactional
@@ -124,7 +125,66 @@ public class TokenServiceImpl implements TokenService {
         tokenRepository.save(token);
     }
 
+    @Override
+    @Transactional
+    public Token generateEmailVerificationToken(User user) {
 
+        log.info("Generating email verification OTP for user: {}", user.getEmail());
+
+        Token token = new Token();
+
+        token.setUser(user);
+        token.setTokenType(TokenType.EMAIL_VERIFICATION);
+
+        // Secure 6-digit OTP
+        SecureRandom secureRandom = new SecureRandom();
+        int otp = 100000 + secureRandom.nextInt(900000);
+        String secureOtp = String.valueOf(otp);
+
+        token.setTokenValue(secureOtp);
+
+        // expiry (example: 10 minutes)
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(10));
+
+        token.setRevoked(false);
+
+        // OPTIONAL: send email here (better via event in production)
+        emailService.sendEmailVerificationOtp(user, secureOtp);
+
+        return tokenRepository.save(token);
+
+    }
+
+    @Override
+    @Transactional
+    public Token createLoginVerificationToken(User user) {
+
+        log.info("Generating login verification OTP for suspicious login: {}", user.getEmail());
+
+        Token token = new Token();
+
+        token.setUser(user);
+        token.setTokenType(TokenType.LOGIN_VERIFICATION);
+
+        // Secure OTP generation
+        SecureRandom secureRandom = new SecureRandom();
+        int otp = 100000 + secureRandom.nextInt(900000);
+        String secureOtp = String.valueOf(otp);
+
+        token.setTokenValue(secureOtp);
+
+        // Short expiry (VERY IMPORTANT for security)
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(5));
+
+        token.setRevoked(false);
+
+        Token saved = tokenRepository.save(token);
+
+        // Send email (step-up authentication)
+        emailService.sendSuspiciousLoginEmail(user, secureOtp);
+
+        return saved;
+    }
 
     // Helper method to set dynamic expiration time based on token type
     private LocalDateTime calculateExpiryDate(TokenType tokenType) {

@@ -60,7 +60,7 @@ public class DeviceMapper {
     }
 
 
-    public static ResponseDeviceDto toDto(Device device) {
+    public  ResponseDeviceDto toResponseDto(Device device) {
         return ResponseDeviceDto.builder()
                 .id(device.getId())
                 .deviceName(device.getDeviceName())

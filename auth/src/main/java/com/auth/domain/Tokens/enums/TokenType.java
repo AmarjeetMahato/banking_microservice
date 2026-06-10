@@ -20,6 +20,8 @@ public enum TokenType {
      */
     PASSWORD_RESET,
 
+    LOGIN_VERIFICATION,
+
     /**
      * MFA_OTP: Multi-Factor Authentication (जैसे मोबाइल पर आने वाला 2FA कोड)।
      */

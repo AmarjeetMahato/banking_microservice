@@ -10,7 +10,7 @@ public interface AuthenticationService {
 
     String CreateUser(UserDto dto);
 
-    String login(AuthLoginDto dto);
+    String login(AuthLoginDto dto, HttpServletRequest request, HttpServletResponse response);
 
     String verifyEmail(VerifyEmailDto verifyEmailDto, HttpServletRequest request, HttpServletResponse response);
 }
