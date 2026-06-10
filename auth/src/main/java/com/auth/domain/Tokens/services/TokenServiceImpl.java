@@ -7,6 +7,7 @@ import com.auth.domain.Tokens.entity.Token;
 import com.auth.domain.Tokens.enums.TokenType;
 import com.auth.domain.Tokens.mapper.TokenMapper;
 import com.auth.domain.Tokens.repository.TokenRepository;
+import com.auth.globalException.BadRequestException;
 import com.auth.globalException.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +87,44 @@ public class TokenServiceImpl implements TokenService {
 
         return tokenMapper.toResponseDto(token);
     }
+
+    @Override
+    public Token validateEmailVerificationToken(String email, String tokenValue) {
+
+        Token token = tokenRepository.findByTokenValueAndTokenType(tokenValue, TokenType.EMAIL_VERIFICATION)
+                .orElseThrow(() -> {
+                    log.error("Invalid verification token");
+                    return new BadRequestException("Invalid OTP code.");
+                });
+
+        if (!token.getUser().getEmail().equalsIgnoreCase(email)) {
+            throw new BadRequestException("Invalid token for this email.");
+        }
+
+        if (token.isRevoked()) {
+            throw new BadRequestException("OTP has already been used.");
+        }
+
+        if (token.isExpired() || token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            token.setExpired(true);
+            tokenRepository.save(token);
+            throw new BadRequestException("OTP has expired. Please request a new OTP.");
+        }
+        return token;
+    }
+
+
+
+    @Override
+    public void revokeToken(Token token) {
+
+        token.setRevoked(true);
+        token.setExpired(true);
+
+        tokenRepository.save(token);
+    }
+
+
 
     // Helper method to set dynamic expiration time based on token type
     private LocalDateTime calculateExpiryDate(TokenType tokenType) {

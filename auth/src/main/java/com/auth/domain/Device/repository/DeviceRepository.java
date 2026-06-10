@@ -7,4 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device,String> {
+
+    boolean existsByDeviceFingerprint(String deviceFingerprint);
+
+    boolean existsByDeviceHash(String deviceHash);
 }

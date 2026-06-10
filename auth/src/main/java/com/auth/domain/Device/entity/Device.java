@@ -27,8 +27,17 @@ public class Device extends BaseEntity {
     @Column(name = "os", nullable = false)
     private String os; // Windows, Android, iOS
 
+    @Column(name = "os_version")
+    private String osVersion;
+
+    @Column(name = "platform")
+    private String platform;
+
     @Column(name = "browser")
     private String browser;
+
+    @Column(name = "browser_version")
+    private String browserVersion;
 
     @Column(name = "ip_address", nullable = false)
     private String ipAddress;
@@ -41,6 +50,24 @@ public class Device extends BaseEntity {
 
     @Column(name = "device_hash", length = 256)
     private String deviceHash;
+
+
+
+    // ---------------- COUNTRY ----------------
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "region")
+    private String region;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "timezone")
+    private String timezone;
+
+    @Column(name = "language")
+    private String language;
 
 
     // ---------------- AUTH / SECURITY ----------------
