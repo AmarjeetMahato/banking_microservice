@@ -1,6 +1,8 @@
 package com.kyc_service.domain.KycAddress.entity;
 
+import com.kyc_service.base.BaseEntity;
 import com.kyc_service.domain.KycAddress.enums.AddressType;
+import com.kyc_service.domain.KycProfile.entity.KycProfile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +18,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class KycAddress {
+public class KycAddress extends BaseEntity {
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kyc_profile_id", nullable = false)
     private KycProfile kycProfile;
