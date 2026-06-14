@@ -12,6 +12,7 @@ import com.auth.domain.Device.services.DeviceService;
 import com.auth.domain.Device.services.GeoLocationService;
 import com.auth.domain.Device.services.ServiceImpl.DeviceUtil;
 import com.auth.domain.Device.services.RiskActionService;
+import com.auth.domain.Emails.Services.EmailService;
 import com.auth.domain.Tokens.dtos.TokenCreateDto;
 import com.auth.domain.Tokens.dtos.TokenResponseDto;
 import com.auth.domain.Tokens.entity.Token;
@@ -30,6 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,14 +55,24 @@ public class AuthenticationServiceImpl implements  AuthenticationService {
     private final DeviceSecurityService deviceSecurityService;
     private  final RiskActionService riskActionService;
     private  final GeoLocationService geoLocationService;
+    private final TaskExecutor taskExecutor;
+    private  final EmailService emailService;
 
     @Override
-    public String CreateUser(UserDto dto) {
+    public void CreateUser(UserDto dto) {
 
         try {
-            if(userRepository.findByEmail(dto.getEmail()).isPresent()){
-                  throw  new ResourceAlreadyExistsException("User already register with this email");
+            // Check if email already exists
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new ResourceAlreadyExistsException("User already registered with this email");
             }
+
+            // Check if phone already exists (only if phone is provided)
+            if (dto.getPhone() != null && userRepository.existsByPhone(dto.getPhone())) {
+                throw new ResourceAlreadyExistsException("User already registered with this phone number");
+            }
+
+
             User user = userMapper.toEntity(dto);
             User savedUser = userRepository.save(user);
 
@@ -69,9 +81,50 @@ public class AuthenticationServiceImpl implements  AuthenticationService {
                     .tokenType(TokenType.EMAIL_VERIFICATION)
                     .build();
             TokenResponseDto tokenResponse =  tokenService.createToken(tokenDto);
-            return  "User registered successfully.";
+            // ── 4. Hand off email to thread pool (non-blocking) ───────────────────
+            //    Pass primitives / value copies — never pass the JPA-managed entity
+            //    into an async task (session will be closed by the time it runs).
+            String userId    = savedUser.getId();
+            String firstName = savedUser.getFirstName();
+            String email     = savedUser.getEmail();
+            String otp       = tokenResponse.getTokenValue();   // the raw OTP / secure token
+
+            taskExecutor.execute(() -> dispatchVerificationEmail(userId, firstName, email, otp));
+
+            return ;
         } catch (ResourceAlreadyExistsException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Runs on email-async-* thread — completely isolated from the HTTP thread
+    // ─────────────────────────────────────────────────────────────────────────
+    private void dispatchVerificationEmail(
+            String userId,
+            String firstName,
+            String email,
+            String otp
+    ) {
+        try {
+            log.info("[email-thread] Sending verification OTP to userId={}", userId);
+
+            // Build a detached User object — just enough data for the template
+            User emailUser = User.builder()
+                    .id(userId)
+                    .firstName(firstName)
+                    .email(email)
+                    .build();
+
+            emailService.sendEmailVerificationOtp(emailUser, otp);
+
+            log.info("[email-thread] Verification email dispatched userId={}", userId);
+
+        } catch (Exception ex) {
+            // Never propagate — this is a background thread.
+            // In production: push to a retry queue / outbox table here.
+            log.error("[email-thread] Failed to send verification email userId={} reason={}",
+                    userId, ex.getMessage(), ex);
         }
     }
 

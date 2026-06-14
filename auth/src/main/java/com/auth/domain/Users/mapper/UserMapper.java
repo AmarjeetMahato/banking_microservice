@@ -1,10 +1,10 @@
 package com.auth.domain.Users.mapper;
 
+import com.auth.domain.Roles.entity.Role;
 import com.auth.domain.Users.dtos.ResponseUserDto;
 import com.auth.domain.Users.dtos.UpdateUserDto;
 import com.auth.domain.Users.dtos.UserDto;
 import com.auth.domain.Users.entity.User;
-import org.apache.catalina.Role;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -19,9 +19,11 @@ public class UserMapper {
         return User.builder()
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
-                .Email(dto.getEmail())
+                .email(dto.getEmail())
+                .password(dto.getPassword())
                 .phone(dto.getPhone())
                 .gender(dto.getGender())
+                .deleted(false)
                 .profilePic(dto.getProfilePic())
                 .isActive(true)
                 .emailVerified(false)

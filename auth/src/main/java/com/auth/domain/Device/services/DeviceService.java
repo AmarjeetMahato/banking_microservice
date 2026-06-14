@@ -19,7 +19,7 @@ import java.util.Optional;
 public interface DeviceService {
 
 
-    Device createDevice(CreateDeviceDto dto, User user, String refreshToken);
+    ResponseDeviceDto createDevice(CreateDeviceDto dto, User user, String refreshToken);
 
     ResponseDeviceDto getByDeviceId(String deviceId);
 
@@ -27,36 +27,6 @@ public interface DeviceService {
 
     Optional<Device> findByFingerprint(String fingerprint, String userId);
 
-    List<Device> findTrustedDevices(String userId);
+    List<ResponseDeviceDto> findTrustedDevices(String userId);
 
-    @Service
-    @Slf4j
-    @RequiredArgsConstructor
-    class GeoLocationServiceImpl  implements GeoLocationService {
-
-        private final RestTemplate restTemplate = new RestTemplate();
-
-        @Override
-        public GeoLocation getLocation(String ip) {
-
-            String url = "https://ipapi.co/" + ip + "/json/";
-
-            ResponseEntity<Map> response =
-                    restTemplate.getForEntity(url, Map.class);
-
-            Map body = response.getBody();
-
-            if (body == null) {
-                return GeoLocation.builder().ip(ip).build();
-            }
-
-            return GeoLocation.builder()
-                    .ip(ip)
-                    .country((String) body.get("country_name"))
-                    .region((String) body.get("region"))
-                    .city((String) body.get("city"))
-                    .timezone((String) body.get("timezone"))
-                    .build();
-        }
-    }
 }

@@ -4,10 +4,12 @@ import com.auth.base.BaseEntity;
 import com.auth.domain.Roles.entity.Role;
 import com.auth.domain.Tokens.entity.Token;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +26,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 public class User extends BaseEntity {
 
     @NotNull(message = "first name is required")
@@ -37,7 +39,7 @@ public class User extends BaseEntity {
 
     @Email(message = "Email should be valid")
     @Column(name = "email", nullable = true, unique = true, length = 150)
-    private  String Email;
+    private  String email;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")

@@ -1,17 +1,17 @@
 package com.auth.domain.Authentication.controllers;
 
 
-import com.auth.domain.Authentication.dtos.CreateUserDto;
+import com.auth.domain.Authentication.dtos.AuthLoginDto;
+import com.auth.domain.Authentication.dtos.VerifyEmailDto;
 import com.auth.domain.Authentication.services.AuthenticationService;
 import com.auth.domain.Users.dtos.UserDto;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -21,12 +21,37 @@ public class AuthenticationController {
      private  final AuthenticationService authService;
 
 
-     @PostMapping("/create")
-     public ResponseEntity<String> createUser(@Valid @RequestBody UserDto createUserDto){
-           String user = this.authService.CreateUser(createUserDto);
-           return  ResponseEntity.status(HttpStatus.CREATED).body(user);
+     @GetMapping("/health")
+     public  ResponseEntity<?> healthCheck(){
+         return  ResponseEntity.status(HttpStatus.OK).body("Api Working Perfectly");
      }
 
+
+     @PostMapping("/create")
+     public ResponseEntity<String> createUser(@Valid @RequestBody UserDto createUserDto){
+           this.authService.CreateUser(createUserDto);
+           return  ResponseEntity.status(HttpStatus.ACCEPTED)
+                   .body("User registered successfully. A verification email has been sent to your inbox.");
+     }
+
+     @PostMapping("/verify-email")
+     public ResponseEntity<String> verifyEmail(@Valid
+                     @RequestBody VerifyEmailDto verifyEmailDto,
+                     HttpServletRequest request,
+                     HttpServletResponse response) {
+           String verify = authService.verifyEmail(verifyEmailDto,request,response);
+           return  ResponseEntity.status(HttpStatus.OK).body(verify);
+     }
+
+     @PostMapping("/login")
+     public ResponseEntity<String> loginUser(@Valid
+                             @RequestBody AuthLoginDto loginDto,
+                              HttpServletRequest request,
+                              HttpServletResponse response
+     ){
+            String Login = authService.login(loginDto,request, response);
+            return  ResponseEntity.status(HttpStatus.OK).body(Login);
+     }
 
 
 }

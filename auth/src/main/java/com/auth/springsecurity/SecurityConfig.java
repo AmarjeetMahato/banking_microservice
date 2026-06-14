@@ -35,10 +35,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private AuthenticationSuccessHandler successHandler;
-    private  JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final  OAuth2SuccessHandler successHandler;
+    private  final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)

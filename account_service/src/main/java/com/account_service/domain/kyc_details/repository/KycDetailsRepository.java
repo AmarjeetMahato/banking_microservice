@@ -26,4 +26,6 @@ public interface KycDetailsRepository extends JpaRepository<KycDetail,String> {
     Optional<Account> findByIdAndDeletedFalse(
             String id
     );
+
+    Optional<KycDetail> findByAccountId(String accountId);
 }

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccountLimitsRepository extends JpaRepository<AccountLimit,String> {
+    boolean existsByAccountId(String id);
 }

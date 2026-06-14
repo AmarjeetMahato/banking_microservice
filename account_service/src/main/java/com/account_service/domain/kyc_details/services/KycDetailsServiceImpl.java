@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -82,92 +83,112 @@ public class KycDetailsServiceImpl implements  KycDetailsService {
 
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public ResponseKycDetails getKycDetailsById(
-//            String kycId
-//    ) {
-//
-//        try {
-//
-//            /*
-//             * Get logged-in user
-//             */
-////            Authentication authentication =
-////                    SecurityContextHolder
-////                            .getContext()
-////                            .getAuthentication();
-////
-////            String loggedInUserId =
-////                    authentication.getName();
-////
-//       /*
-//             * Fetch KYC details
-//             */
-//            KycDetail kycDetail =
-//                    kycDetailsRepository
-//                            .findByIdAndDeletedFalse(kycId)
-//                            .orElseThrow(() ->
-//                                    new ResourceNotFoundException(
-//                                            "KYC details not found"
-//                                    )
-//                            );
-//
-//            /*
-//             * Check associated account exists
-//             */
-//            Account account = kycDetail.getAccount();
-//
-//            if (account == null) {
-//
-//                throw new ResourceNotFoundException(
-//                        "Associated account not found"
-//                );
-//            }
-//
-//            /*
-//             * Prevent access to deleted accounts
-//             */
-//            if (Boolean.TRUE.equals(account.getDeleted())) {
-//
-//                throw new BadRequestException(
-//                        "Associated account is deleted"
-//                );
-//            }
-//
-//            /*
-//             * Authorization check
-//             */
-//            if (!account.getUserId().equals(loggedInUserId)) {
-//
-//                throw new UnauthorizedException(
-//                        "You are not authorized to access this KYC"
-//                );
-//            }
-//
-//            /*
-//             * Return response
-//             */
-//            return kycDetailsMapper.toResponse(
-//                    kycDetail
-//            );
-//
-//        } catch (Exception ex) {
-//
-//            throw new RuntimeException(
-//                    "Unexpected error occurred while fetching KYC details"
-//            );
-//        }
-//    }
 
     @Override
-    public ResponseKycDetails getKycDetailsByAccountId(String accountId) {
-        return null;
+    @Transactional(readOnly = true)
+    public ResponseKycDetails getKycDetailsById(
+            String kycId
+    ) {
+
+        try {
+
+            /*
+             * Get logged-in user
+             */
+            Authentication authentication =
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication();
+
+            String loggedInUserId =
+                    authentication.getName();
+//
+       /*
+             * Fetch KYC details
+             */
+            KycDetail kycDetail =
+                    kycDetailsRepository
+                            .findByIdAndDeletedFalse(kycId)
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "KYC details not found"
+                                    )
+                            );
+
+            /*
+             * Check associated account exists
+             */
+            Account account = kycDetail.getAccount();
+
+            if (account == null) {
+
+                throw new ResourceNotFoundException(
+                        "Associated account not found"
+                );
+            }
+
+            /*
+             * Prevent access to deleted accounts
+             */
+            if (Boolean.TRUE.equals(account.getDeleted())) {
+
+                throw new BadRequestException(
+                        "Associated account is deleted"
+                );
+            }
+
+            /*
+             * Authorization check
+             */
+            if (!account.getUserId().equals(loggedInUserId)) {
+
+                throw new UnauthorizedException(
+                        "You are not authorized to access this KYC"
+                );
+            }
+
+            /*
+             * Return response
+             */
+            return kycDetailsMapper.toResponse(
+                    kycDetail
+            );
+
+        } catch (Exception ex) {
+
+            throw new RuntimeException(
+                    "Unexpected error occurred while fetching KYC details"
+            );
+        }
     }
 
+@Override
+@Transactional(readOnly = true)
+public ResponseKycDetails getKycDetailsByAccountId(String accountId) {
+
+    if (accountId == null || accountId.isBlank()) {
+        throw new BadRequestException("Account id is required");
+    }
+
+    KycDetail kycDetails = kycDetailsRepository
+            .findByAccountId(accountId)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "KYC details not found for account id : " + accountId
+                    ));
+
+    return kycDetailsMapper.toResponse(kycDetails);
+}
+
+
     @Override
+    @Transactional(readOnly = true)
     public List<ResponseKycDetails> getAllKycDetails() {
-        return List.of();
+
+        return kycDetailsRepository.findAll()
+                .stream()
+                .map(kycDetailsMapper::toResponse)
+                .toList();
     }
 
     @Override

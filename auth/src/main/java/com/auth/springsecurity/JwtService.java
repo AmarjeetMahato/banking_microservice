@@ -7,12 +7,15 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -22,13 +25,26 @@ import java.util.UUID;
 @Service
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class JwtService {
 
     private final SecretKey key;
     private final long accessTtlSeconds;
     private final long refreshTtlSeconds;
     private final String issuer;
+
+    // Explicit constructor to handle @Value injection and Key generation
+    public JwtService(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.access-ttl-seconds:900}") long accessTtlSeconds, // Default 15 mins
+            @Value("${app.jwt.refresh-ttl-seconds:86400}") long refreshTtlSeconds, // Default 24 hours
+            @Value("${app.jwt.issuer:my-auth-service}") String issuer) {
+
+        // Generate the SecretKey from the properties string
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.accessTtlSeconds = accessTtlSeconds;
+        this.refreshTtlSeconds = refreshTtlSeconds;
+        this.issuer = issuer;
+    }
 
 
     public String generateAccessToken(User user) {

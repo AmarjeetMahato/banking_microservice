@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthenticationService {
 
-    String CreateUser(UserDto dto);
+    void CreateUser(UserDto dto);
 
     String login(AuthLoginDto dto, HttpServletRequest request, HttpServletResponse response);
 

@@ -17,18 +17,12 @@ public class KycDetailsMapper {
     public KycDetail toEntity(KycDetailsDto dto, Account account){
 
         if (dto == null) {
-            throw new BadRequestException(
-                    "Invalid KYC request payload"
-            );
+            throw new BadRequestException("Invalid KYC request payload");
         }
 
         if (account == null) {
-            throw new BadRequestException(
-                    "Associated account is required"
-            );
+            throw new BadRequestException("Associated account is required");
         }
-
-
         return KycDetail.builder()
                 .account(account)
                 .aadhaarNumber(dto.getAadhaarNumber())
@@ -43,15 +37,12 @@ public class KycDetailsMapper {
     public ResponseKycDetails toResponse(KycDetail kycDetail) {
 
         if (kycDetail == null) {
-            throw new BadRequestException(
-                    "KYC details not found"
-            );
+            throw new BadRequestException("KYC details not found");
         }
 
         return ResponseKycDetails.builder()
                 .id(kycDetail.getId())
                 .accountId(kycDetail.getAccount().getId())
-
                 /*
                  * In production:
                  * return masked values instead
@@ -70,15 +61,10 @@ public class KycDetailsMapper {
     /**
      * Update existing entity from Update DTO
      */
-    public void updateEntity(
-            KycDetail kycDetail,
-            UpdateKycDetails dto
-    ) {
+    public void updateEntity(KycDetail kycDetail, UpdateKycDetails dto) {
 
         if (dto == null) {
-            throw new BadRequestException(
-                    "Invalid update payload"
-            );
+            throw new BadRequestException("Invalid update payload");
         }
 
         /*
@@ -87,9 +73,7 @@ public class KycDetailsMapper {
         if (dto.getAadhaarNumber() != null
                 && !dto.getAadhaarNumber().isBlank()) {
 
-            kycDetail.setAadhaarNumber(
-                    dto.getAadhaarNumber()
-            );
+            kycDetail.setAadhaarNumber(dto.getAadhaarNumber());
         }
 
         /*
@@ -98,9 +82,7 @@ public class KycDetailsMapper {
         if (dto.getPanNumber() != null
                 && !dto.getPanNumber().isBlank()) {
 
-            kycDetail.setPanNumber(
-                    dto.getPanNumber()
-            );
+            kycDetail.setPanNumber(dto.getPanNumber());
         }
 
         /*
@@ -108,18 +90,14 @@ public class KycDetailsMapper {
          */
         if (dto.getKycStatus() != null) {
 
-            kycDetail.setKycStatus(
-                    dto.getKycStatus()
-            );
+            kycDetail.setKycStatus(dto.getKycStatus());
 
             /*
              * Auto-set verification timestamp
              */
             if (dto.getKycStatus() == KycStatus.VERIFIED) {
 
-                kycDetail.setVerifiedAt(
-                        LocalDateTime.now()
-                );
+                kycDetail.setVerifiedAt(LocalDateTime.now());
             }
         }
     }

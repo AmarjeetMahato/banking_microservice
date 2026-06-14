@@ -23,7 +23,7 @@ public class DeviceSecurityServiceImpl implements DeviceSecurityService {
     @Override
     public boolean isSuspiciousDevice(CreateDeviceDto dto, DeviceContext context, String userId) {
 
-        List<Device> trustedDevices = deviceRepository.findTrustedDevices(userId);
+        List<Device> trustedDevices = deviceRepository.findByUserIdAndIsTrustedTrue(userId);
 
         if (trustedDevices.isEmpty()) {
             return false; // first login → trusted

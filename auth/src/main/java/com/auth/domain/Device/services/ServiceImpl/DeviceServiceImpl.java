@@ -34,7 +34,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public Device createDevice(CreateDeviceDto deviceDto, User user, String refreshToken) {
+    public ResponseDeviceDto createDevice(CreateDeviceDto deviceDto, User user, String refreshToken) {
 
         if (deviceRepository.existsByDeviceFingerprint(
                 deviceDto.getDeviceFingerprint())) {
@@ -56,7 +56,8 @@ public class DeviceServiceImpl implements DeviceService {
         device.setIsBlocked(false);
         device.setLastLoginAt(LocalDateTime.now());
 
-        return deviceRepository.save(device);
+        Device deviceSaved =  deviceRepository.save(device);
+        return  deviceMapper.toResponseDto(deviceSaved);
     }
 
     @Override
@@ -124,8 +125,11 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public List<Device> findTrustedDevices(String userId) {
-        return deviceRepository.findTrustedDevices(userId);
+    public List<ResponseDeviceDto> findTrustedDevices(String userId) {
+        return deviceRepository.findByUserIdAndIsTrustedTrue(userId)
+                .stream()
+                .map(deviceMapper::toResponseDto)
+                .toList();
     }
 
     private String getClientIp(HttpServletRequest request) {

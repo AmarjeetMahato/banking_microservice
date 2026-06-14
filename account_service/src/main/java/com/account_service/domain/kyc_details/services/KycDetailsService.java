@@ -18,7 +18,7 @@ public interface KycDetailsService {
     /**
      * Get KYC details by ID
      */
-//    ResponseKycDetails getKycDetailsById(String kycId);
+     ResponseKycDetails getKycDetailsById(String kycId);
 
     /**
      * Get KYC details using account ID

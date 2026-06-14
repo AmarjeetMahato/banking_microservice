@@ -18,5 +18,6 @@ public interface DeviceRepository extends JpaRepository<Device,String> {
 
     Optional<Device> findByDeviceFingerprintAndUserId(String deviceFingerprint, String id);
 
-    List<Device> findTrustedDevices(String userId);
+    List<Device> findByUserIdAndIsTrustedTrue(String userId);
+
 }
