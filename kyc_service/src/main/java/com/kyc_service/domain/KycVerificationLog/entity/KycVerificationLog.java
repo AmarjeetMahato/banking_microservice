@@ -60,5 +60,9 @@ public class KycVerificationLog extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
+    private Boolean isActive = false;
+
+    @Builder.Default
+    @Column(nullable = false)
     private Boolean systemGenerated = false;
 }
