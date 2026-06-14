@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @SuperBuilder
 public class KycVerificationLog extends BaseEntity {
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kyc_profile_id", nullable = false)
     private KycProfile kycProfile;
