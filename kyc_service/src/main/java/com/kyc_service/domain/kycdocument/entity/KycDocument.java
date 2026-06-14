@@ -1,6 +1,9 @@
 package com.kyc_service.domain.kycdocument.entity;
 
 
+import com.kyc_service.base.BaseEntity;
+import com.kyc_service.domain.KycProfile.entity.KycProfile;
+import com.kyc_service.domain.kycdocument.enums.KycDocumentType;
 import com.kyc_service.domain.kycdocument.enums.KycVerificationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -23,7 +26,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class KycDocument {
+public class KycDocument extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kyc_profile_id", nullable = false)
     private KycProfile kycProfile;
