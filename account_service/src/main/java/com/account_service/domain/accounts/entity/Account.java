@@ -4,11 +4,9 @@ package com.account_service.domain.accounts.entity;
 import com.account_service.base.BaseEntity;
 import com.account_service.domain.account_balance.entity.AccountBalance;
 import com.account_service.domain.account_limits.entity.AccountLimit;
-import com.account_service.domain.account_transactions.entity.AccountTransaction;
 import com.account_service.domain.accounts.enums.AccountStatus;
 import com.account_service.domain.accounts.enums.AccountType;
 import com.account_service.domain.beneficiaries.entity.Beneficiary;
-import com.account_service.domain.kyc_details.entity.KycDetail;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -64,13 +62,6 @@ public class Account extends BaseEntity {
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
     private AccountLimit accountLimit;
 
-    @Valid
-    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
-    private KycDetail kycDetail;
-
-    @Valid // Validates every transaction object in the list
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
-    private List<AccountTransaction> transactions = new ArrayList<>();
 
     @Valid
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
