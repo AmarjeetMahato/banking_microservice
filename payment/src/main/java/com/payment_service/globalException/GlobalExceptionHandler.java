@@ -66,6 +66,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> AccessDeniedException(AccessDeniedException ex) {
+        String message = ex.getMessage();
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .message(message)
+                .success(false)
+                .status(HttpStatus.FORBIDDEN).build();
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiErrorResponse> BadRequestException(BadRequestException ex) {

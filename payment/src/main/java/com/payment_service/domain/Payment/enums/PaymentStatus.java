@@ -14,5 +14,7 @@ public enum PaymentStatus {
 
     REVERSED,
 
-    REFUNDED
+    REFUNDED,
+
+    UNDER_INVESTIGATION
 }
