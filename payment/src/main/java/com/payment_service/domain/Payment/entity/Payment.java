@@ -52,15 +52,8 @@ public class Payment extends BaseEntity {
     private String destinationAccountId;
 
     @NotNull(message = "Amount is required")
-    @DecimalMin(
-            value = "0.01",
-            message = "Amount must be greater than zero"
-    )
-    @Digits(
-            integer = 18,
-            fraction = 2,
-            message = "Amount format is invalid"
-    )
+    @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
+    @Digits(integer = 18, fraction = 2, message = "Amount format is invalid")
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
@@ -97,11 +90,7 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private Boolean refunded = false;
 
-    @OneToMany(
-            mappedBy = "payment",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<Transaction> transactions;
 
     @OneToMany(

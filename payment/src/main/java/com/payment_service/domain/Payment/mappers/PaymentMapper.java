@@ -2,8 +2,10 @@ package com.payment_service.domain.Payment.mappers;
 
 import com.payment_service.domain.Payment.dtos.PaymentCreateRequestDto;
 import com.payment_service.domain.Payment.dtos.PaymentResponseDto;
+import com.payment_service.domain.Payment.dtos.PaymentStatusUpdateResponseDto;
 import com.payment_service.domain.Payment.dtos.PaymentUpdateRequestDto;
 import com.payment_service.domain.Payment.entity.Payment;
+import com.payment_service.domain.Payment.enums.PaymentStatus;
 import com.payment_service.globalException.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -65,10 +67,7 @@ public class PaymentMapper {
     /**
      * Update Existing Entity
      */
-    public void updateEntity(
-            Payment payment,
-            PaymentUpdateRequestDto dto
-    ) {
+    public void updateEntity(Payment payment, PaymentUpdateRequestDto dto) {
 
         if (payment == null || dto == null) {
             return;
@@ -88,11 +87,32 @@ public class PaymentMapper {
     }
 
     /**
+     * Convert Entity to Response DTO
+     */
+    public PaymentStatusUpdateResponseDto toStatusResponseDto(
+            Payment payment,
+            PaymentStatus previousStatus
+    ) {
+
+        if (payment == null) {
+            return null;
+        }
+
+        return PaymentStatusUpdateResponseDto.builder()
+                .paymentId(payment.getId())
+                .paymentReference(payment.getPaymentReference())
+                .previousStatus(previousStatus)
+                .currentStatus(payment.getStatus())
+                .updatedAt(payment.getUpdatedAt())
+                .updatedBy("")
+                .message("Payment status updated successfully")
+                .build();
+    }
+
+    /**
      * Convert List<Entity> to List<ResponseDto>
      */
-    public List<PaymentResponseDto> toResponseDtoList(
-            List<Payment> payments
-    ) {
+    public List<PaymentResponseDto> toResponseDtoList(List<Payment> payments) {
 
         return payments.stream()
                 .map(this::toResponseDto)
@@ -102,9 +122,7 @@ public class PaymentMapper {
     /**
      * Convert Page<Entity> to Page<ResponseDto>
      */
-    public Page<PaymentResponseDto> toResponseDtoPage(
-            Page<Payment> paymentPage
-    ) {
+    public Page<PaymentResponseDto> toResponseDtoPage(Page<Payment> paymentPage) {
 
         return paymentPage.map(this::toResponseDto);
     }

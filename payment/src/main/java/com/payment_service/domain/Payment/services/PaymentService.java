@@ -3,6 +3,7 @@ package com.payment_service.domain.Payment.services;
 
 import com.payment_service.domain.Payment.dtos.PaymentCreateRequestDto;
 import com.payment_service.domain.Payment.dtos.PaymentResponseDto;
+import com.payment_service.domain.Payment.dtos.PaymentStatusUpdateResponseDto;
 import com.payment_service.domain.Payment.dtos.PaymentUpdateRequestDto;
 import com.payment_service.domain.Payment.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
@@ -31,12 +32,12 @@ public interface PaymentService {
     /**
      * Update payment status
      */
-    PaymentResponseDto updatePaymentStatus(String paymentId, PaymentStatus status);
+    PaymentStatusUpdateResponseDto updatePaymentStatus(String paymentId, PaymentStatus status);
 
     /**
      * Refund payment
      */
-    PaymentResponseDto refundPayment(String paymentId);
+//    PaymentResponseDto refundPayment(String paymentId);
 
     /**
      * Cancel payment
