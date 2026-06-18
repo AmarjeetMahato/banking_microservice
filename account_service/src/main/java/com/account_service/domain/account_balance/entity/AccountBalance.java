@@ -1,11 +1,13 @@
 package com.account_service.domain.account_balance.entity;
 
 
+import com.account_service.base.BaseEntity;
 import com.account_service.domain.accounts.entity.Account;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -15,8 +17,8 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class AccountBalance {
+@SuperBuilder
+public class AccountBalance extends BaseEntity {
     @NotNull(message = "Associated account is required")
     @OneToOne
     @JoinColumn(name = "account_id", nullable = false, unique = true)
