@@ -2,6 +2,7 @@ package com.account_service.domain.account_balance.controllers;
 
 import com.account_service.domain.account_balance.dtos.AccountBalanceResponseDto;
 import com.account_service.domain.account_balance.dtos.CreateAccountBalanceRequestDto;
+import com.account_service.domain.account_balance.dtos.UpdateAccountBalanceRequestDto;
 import com.account_service.domain.account_balance.services.AccountBalanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,13 +29,22 @@ public class AccountBalanceController {
     public ResponseEntity<AccountBalanceResponseDto> getAccountBalance(
             @PathVariable String balanceId){
         AccountBalanceResponseDto result = accountBalanceService.getAccountBalanceById(balanceId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping("/{accountId}/get_by_accountId")
     public ResponseEntity<AccountBalanceResponseDto> getAccountBalanceBYAccountId(
             @PathVariable String accountId){
         AccountBalanceResponseDto result = accountBalanceService.getAccountBalanceByAccountId(accountId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @PatchMapping("/{balanceId}/update")
+    public ResponseEntity<AccountBalanceResponseDto> updateAccountBalance(
+            @PathVariable String balanceId,
+            @RequestBody UpdateAccountBalanceRequestDto dto
+            ){
+        AccountBalanceResponseDto result = accountBalanceService.updateAccountBalance(balanceId,dto);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

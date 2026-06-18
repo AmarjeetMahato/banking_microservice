@@ -9,6 +9,7 @@ import com.account_service.domain.accounts.entity.Account;
 import com.account_service.domain.accounts.enums.AccountStatus;
 import com.account_service.domain.accounts.repository.AccountRepository;
 import com.account_service.globalException.BadRequestException;
+import com.account_service.globalException.InternalServerError;
 import com.account_service.globalException.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,17 +80,48 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
         // 2. Fetch from DB
         AccountBalance accountBalance = accountBalanceRepository.findByAccountIdAndDeletedFalse(accountId)
-                .orElseThrow(() ->
-                        new RuntimeException("Account balance not found")
-                );
-
+                .orElseThrow(() -> new RuntimeException("Account balance not found"));
         return accountBalanceMapper.toResponseDto(accountBalance);
 
     }
 
     @Override
     public AccountBalanceResponseDto updateAccountBalance(String balanceId, UpdateAccountBalanceRequestDto requestDto) {
-        return null;
+        try {
+            if(balanceId == null || balanceId.trim().isEmpty()){
+                throw  new BadRequestException("Balance ID cannot be null or empty");
+            }
+            if (requestDto == null) {
+                throw new BadRequestException("Request body cannot be null");
+            }
+
+            // 2. Fetch balance
+            AccountBalance accountBalance = accountBalanceRepository.findById(balanceId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Account balance not found ")
+                    );
+            // 3. Soft delete check (if applicable)
+            if (accountBalance.getDeleted()) {
+                throw new BadRequestException("Cannot update deleted account balance");
+            }
+
+            // 4. Banking validation (NO NEGATIVE VALUES)
+            if (requestDto.getAvailableBalance().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BadRequestException("Available balance cannot be negative");
+            }
+
+            if (requestDto.getHoldBalance().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BadRequestException("Hold balance cannot be negative");
+            }
+
+            accountBalanceMapper.updateEntity(accountBalance,requestDto);
+            AccountBalance savedAccountBalance = accountBalanceRepository.save(accountBalance);
+
+            return  accountBalanceMapper.toResponseDto(savedAccountBalance);
+        }  catch (InternalServerError e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
