@@ -1,7 +1,6 @@
 package com.account_service.domain.accounts.controllers;
 
 
-import com.account_service.domain.account_balance.services.AccountBalance;
 import com.account_service.domain.accounts.dtos.AccountDto;
 import com.account_service.domain.accounts.dtos.AccountResponse;
 import com.account_service.domain.accounts.services.AccountService;

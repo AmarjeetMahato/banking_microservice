@@ -14,6 +14,7 @@ import com.account_service.domain.accounts.repository.AccountRepository;
 import com.account_service.domain.kyc_details.entity.KycDetail;
 import com.account_service.domain.kyc_details.enums.KycStatus;
 import com.account_service.domain.kyc_details.repository.KycDetailsRepository;
+import com.account_service.globalException.BadRequestException;
 import com.account_service.globalException.ResourceAlreadyExistsException;
 import com.account_service.globalException.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,6 @@ public class AccountServiceImpl implements  AccountService {
     private  final AccountMapper accountMapper;
     private final AccountBalanceRepository accountBalanceRepository;
     private  final AccountLimitsRepository accountLimitsRepository;
-    private  final KycDetailsRepository kycDetailsRepository;
 
     @Transactional
     @Override
@@ -123,6 +123,9 @@ public class AccountServiceImpl implements  AccountService {
              Account account = accountRepository.findById(accountId).orElseThrow(
                      ()-> new ResourceNotFoundException("Account not found")
              );
+             if(account.getStatus() != AccountStatus.ACTIVE){
+                 throw new BadRequestException("Account is not active");
+             }
              return accountMapper.toResponse(account);
          } catch (Exception e) {
              throw new RuntimeException(e);
