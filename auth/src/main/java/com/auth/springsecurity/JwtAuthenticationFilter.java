@@ -21,9 +21,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.auth.utils.AppConstants.AUTH_PUBLIC_URLS;
@@ -42,11 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
-        logger.info("Authorization header : {}");
+        logger.info("Authorization header : {}" + header);
 
         if(header != null && header.startsWith("Bearer ")){
 
             String token =  header.substring(7);
+            logger.info("token " + token);
             try{
                 if (!jwtService.isAccessToken(token)) {
                     //message pass kar hai---
@@ -69,7 +68,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         role.getRoleName()
                                         )
                                 ).collect(Collectors.toList());
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, authorities);
+                        // 🔥 IMPORTANT: include BOTH userId + email
+                        Map<String, Object> principal = new HashMap<>();
+                        principal.put("userId", user.getId());
+                        principal.put("email", user.getEmail());
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        principal,
+                                        null, authorities);
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                         if (SecurityContextHolder.getContext().getAuthentication() == null)

@@ -51,17 +51,23 @@ public class JwtService {
         Instant now = Instant.now();
         List<String> roles = user.getRoles() == null ? List.of() :
                 user.getRoles().stream().map(Role::getRoleName).toList();
+
+        // 1. Create your custom claims map first
+        Map<String, Object> customClaims = Map.of(
+                    "userId",user.getId(),
+                "email", user.getEmail(),
+                "roles", roles,
+                "typ", "access"
+        );
+
+        // 2. Pass claims first, THEN standard fields so they append instead of overwrite
         return Jwts.builder()
+                .claims(customClaims) // 👈 Custom claims go FIRST
                 .id(UUID.randomUUID().toString())
                 .subject(user.getId().toString())
                 .issuer(issuer)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(accessTtlSeconds)))
-                .claims(Map.of(
-                        "email", user.getEmail(),
-                        "roles", roles,
-                        "typ", "access"
-                ))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }

@@ -13,6 +13,9 @@ import com.auth.domain.Device.services.GeoLocationService;
 import com.auth.domain.Device.services.ServiceImpl.DeviceUtil;
 import com.auth.domain.Device.services.RiskActionService;
 import com.auth.domain.Emails.Services.EmailService;
+import com.auth.domain.Roles.entity.Role;
+import com.auth.domain.Roles.enums.RoleName;
+import com.auth.domain.Roles.repository.RoleRepository;
 import com.auth.domain.Tokens.dtos.TokenCreateDto;
 import com.auth.domain.Tokens.dtos.TokenResponseDto;
 import com.auth.domain.Tokens.entity.Token;
@@ -45,6 +48,7 @@ import java.util.Optional;
 public class AuthenticationServiceImpl implements  AuthenticationService {
 
     private final UserRepository userRepository;
+    private  final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private  final TokenService tokenService;
     private  final DeviceService deviceService;
@@ -71,9 +75,30 @@ public class AuthenticationServiceImpl implements  AuthenticationService {
             if (dto.getPhone() != null && userRepository.existsByPhone(dto.getPhone())) {
                 throw new ResourceAlreadyExistsException("User already registered with this phone number");
             }
-
-
             User user = userMapper.toEntity(dto);
+            log.info("Roles work starting");
+            if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                Role defaultRole = roleRepository.findByRoleName(RoleName.USER.toString())
+                        .orElseThrow(() -> new RuntimeException("Default USER role not found in database!"));
+
+                System.out.println("Roles before save: " + user.getRoles().size());
+                log.info("User email: {}", user.getEmail());
+                log.info("Roles count before save: {}", user.getRoles().size());
+
+                user.getRoles().forEach(role ->
+                        System.out.println(role.getId() + " " + role.getRoleName())
+                );
+                user.getRoles().add(defaultRole);
+            }
+
+            log.info("Roles finish working");
+
+
+            // 3. Encrypt the password before saving 🔒
+            String rawPassword = dto.getPassword();
+            String encryptedPassword = passwordEncoder.encode(rawPassword);
+            user.setPassword(encryptedPassword); // Override the raw password with the secure hash
+
             User savedUser = userRepository.save(user);
 
             TokenCreateDto tokenDto = TokenCreateDto.builder()
@@ -148,10 +173,7 @@ public class AuthenticationServiceImpl implements  AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         CreateDeviceDto deviceDto = deviceUtil.extractDevice(request);
-        GeoLocation geo =
-                geoLocationService.getLocation(
-                        deviceDto.getIpAddress()
-                );
+        GeoLocation geo = geoLocationService.getLocation(deviceDto.getIpAddress());
 
         deviceDto.setCountry(geo.getCountry());
         deviceDto.setRegion(geo.getRegion());

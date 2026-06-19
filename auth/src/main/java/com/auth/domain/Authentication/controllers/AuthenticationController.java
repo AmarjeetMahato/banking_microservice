@@ -55,9 +55,4 @@ public class AuthenticationController {
             return  ResponseEntity.status(HttpStatus.OK).body(Login);
      }
 
-     @GetMapping("/get_me")
-     public ResponseEntity<Authentication> getMe(){
-         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-         return ResponseEntity.status(HttpStatus.OK).body(authentication);
-    }
 }
