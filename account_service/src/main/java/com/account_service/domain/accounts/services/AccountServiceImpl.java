@@ -1,5 +1,6 @@
 package com.account_service.domain.accounts.services;
 
+import com.account_service.config.AccountEventProducer;
 import com.account_service.domain.account_balance.entity.AccountBalance;
 import com.account_service.domain.account_balance.repository.AccountBalanceRepository;
 import com.account_service.domain.account_limits.entity.AccountLimit;
@@ -9,11 +10,9 @@ import com.account_service.domain.accounts.dtos.AccountResponse;
 import com.account_service.domain.accounts.dtos.UpdateAccountDto;
 import com.account_service.domain.accounts.entity.Account;
 import com.account_service.domain.accounts.enums.AccountStatus;
+import com.account_service.domain.accounts.kafkaDtos.AccountCreatedEvent;
 import com.account_service.domain.accounts.mapper.AccountMapper;
 import com.account_service.domain.accounts.repository.AccountRepository;
-import com.account_service.domain.kyc_details.entity.KycDetail;
-import com.account_service.domain.kyc_details.enums.KycStatus;
-import com.account_service.domain.kyc_details.repository.KycDetailsRepository;
 import com.account_service.globalException.BadRequestException;
 import com.account_service.globalException.ResourceAlreadyExistsException;
 import com.account_service.globalException.ResourceNotFoundException;
@@ -31,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements  AccountService {
 
+    private final AccountEventProducer accountEventProducer;
     private  final AccountRepository accountRepository;
     private  final AccountMapper accountMapper;
     private final AccountBalanceRepository accountBalanceRepository;
@@ -41,28 +41,15 @@ public class AccountServiceImpl implements  AccountService {
     public AccountResponse createAccount(AccountDto accountDto) {
 
          try{
-             /*
-              * Check duplicate account number
-              */
-             boolean accountExists = accountRepository
-                     .existsByAccountNumberAndDeletedFalse(
-                             accountDto.getAccountNumber()
-                     );
+             boolean accountExists = accountRepository.existsByAccountNumberAndDeletedFalse(
+                     accountDto.getAccountNumber());
 
              if (accountExists) {
-                 throw new ResourceAlreadyExistsException(
-                         "Account number already exists"
-                 );
+                 throw new ResourceAlreadyExistsException("Account number already exists");
              }
-             /*
-              * Convert DTO -> Entity
-              */
              Account account = accountMapper.toEntity(accountDto);
              Account savedAccount = accountRepository.save(account);
 
-             /*
-              * Create Default Balance
-              */
              AccountBalance accountBalance = AccountBalance.builder()
                      .account(savedAccount)
                      .availableBalance(BigDecimal.ZERO)
@@ -71,9 +58,6 @@ public class AccountServiceImpl implements  AccountService {
 
              accountBalanceRepository.save(accountBalance);
 
-             /*
-              * Create Default Account Limits
-              */
              AccountLimit accountLimit = AccountLimit.builder()
                      .account(savedAccount)
                      .dailyLimit(new BigDecimal("50000"))
@@ -82,36 +66,21 @@ public class AccountServiceImpl implements  AccountService {
                      .build();
 
              accountLimitsRepository.save(accountLimit);
-
-             /*
-              * Create Default KYC Record
-              */
-             KycDetail kycDetail = KycDetail.builder()
-                     .account(savedAccount)
-                     .kycStatus(KycStatus.PENDING)
-                     .build();
-
-             kycDetailsRepository.save(kycDetail);
-
-             /*
-              * Attach relations manually (optional but useful)
-              */
-
               savedAccount.setBalance(accountBalance);
               savedAccount.setAccountLimit(accountLimit);
-              savedAccount.setKycDetail(kycDetail);
 
+             AccountCreatedEvent event = AccountCreatedEvent.builder()
+                     .accountId(savedAccount.getId())
+                     .userId(savedAccount.getUserId())
+                     .accountType(savedAccount.getAccountType())
+                     .accountNumber(savedAccount.getAccountNumber())
+                     .build();
              return  accountMapper.toResponse(savedAccount);
 
          } catch (DataIntegrityViolationException ex) {
-             /*
-              * Database constraint violation
-              */
              throw new RuntimeException(
                      "Database constraint violation occurred while creating account"
              );
-
-
          } catch (RuntimeException e) {
              throw new RuntimeException(e);
          }
